@@ -3,6 +3,7 @@ package io.fluxzero.training.meepleverse.payments.api;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.fluxzero.common.serialization.JsonUtils;
 import io.fluxzero.sdk.Fluxzero;
+import io.fluxzero.sdk.tracking.Consumer;
 import io.fluxzero.sdk.tracking.TrackSelf;
 import io.fluxzero.sdk.tracking.handling.Request;
 import io.fluxzero.sdk.web.HttpRequestMethod;
@@ -19,6 +20,7 @@ import static io.fluxzero.sdk.configuration.ApplicationProperties.requirePropert
 
 @Value
 @TrackSelf
+@Consumer(name = "payments")
 public class ValidatePayment extends SendWebRequest implements Request<Boolean> {
     String proxyConsumer = "proxy-payments";
 
