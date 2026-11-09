@@ -54,7 +54,7 @@ public class OrderProgressProjection {
     void on(ShipmentSent event, Instant timestamp) {
         // ShipmentSent is recorded before the carrier is called.
         store(new OrderObservation(event.details().orderId(), SHIPMENT_RECORDED,
-                                   List.of(event.details().itemId()), event.shipmentId(), null,
+                                   event.details().itemIds(), event.shipmentId(), null,
                                    timestamp), event.shipmentId().toString());
     }
 
