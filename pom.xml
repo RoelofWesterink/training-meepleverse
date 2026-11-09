@@ -5,57 +5,24 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>4.1.2</version>
+		<version>3.5.0</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>io.fluxzero.training</groupId>
-	<artifactId>setup-check</artifactId>
+	<artifactId>meepleverse</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>Training setup check</name>
-	<description>Check the local Fluxzero development environment.</description>
+	<name>Meepleverse</name>
+	<description>An e-commerce webapp for board games.</description>
 	<properties>
-		<java.version>25</java.version>
-		<fluxzero.version>1.292.49</fluxzero.version>
-		<!-- Align shared libraries with the SDK 1.x BOM. -->
-		<jackson-2-bom.version>2.22.4</jackson-2-bom.version>
-		<junit-jupiter.version>6.1.3</junit-jupiter.version>
-		<logback.version>1.6.6</logback.version>
-		<jetty.version>12.1.14</jetty.version>
-		<maven-compiler-plugin.version>3.16.0</maven-compiler-plugin.version>
-		<maven-dependency-plugin.version>3.11.0</maven-dependency-plugin.version>
-		<maven-deploy-plugin.version>3.2.0</maven-deploy-plugin.version>
-		<maven-enforcer-plugin.version>3.7.0</maven-enforcer-plugin.version>
-		<maven-install-plugin.version>3.2.0</maven-install-plugin.version>
-		<maven-surefire-plugin.version>3.6.1</maven-surefire-plugin.version>
+		<java.version>24</java.version>
 	</properties>
-
-	<repositories>
-		<repository>
-			<id>fluxzero</id>
-			<url>https://packages.fluxzero.io/maven</url>
-			<snapshots><enabled>false</enabled></snapshots>
-		</repository>
-	</repositories>
-	<pluginRepositories>
-		<pluginRepository>
-			<id>fluxzero-plugins</id>
-			<url>https://packages.fluxzero.io/maven</url>
-			<snapshots><enabled>false</enabled></snapshots>
-		</pluginRepository>
-	</pluginRepositories>
 
 	<dependencyManagement>
 		<dependencies>
-			<!-- Keep the application and annotation processor on Boot's newer Lombok. -->
-			<dependency>
-				<groupId>org.projectlombok</groupId>
-				<artifactId>lombok</artifactId>
-				<version>${lombok.version}</version>
-			</dependency>
 			<dependency>
 				<groupId>io.fluxzero</groupId>
 				<artifactId>fluxzero-bom</artifactId>
-				<version>${fluxzero.version}</version>
+				<version>1.23.0</version>
 				<scope>import</scope>
 				<type>pom</type>
 			</dependency>
@@ -74,7 +41,7 @@
 			<scope>test</scope>
 		</dependency>
 
-
+		<!--flux capacitor -->
 		<dependency>
 			<groupId>io.fluxzero</groupId>
 			<artifactId>sdk</artifactId>
@@ -109,13 +76,8 @@
 	</dependencies>
 
 	<build>
-		<finalName>setup-check</finalName>
+		<finalName>meepleverse</finalName>
 		<plugins>
-            <plugin>
-                <groupId>io.fluxzero.tools</groupId>
-                <artifactId>fluxzero-maven-plugin</artifactId>
-                <version>1.21.6</version>
-            </plugin>
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
@@ -132,7 +94,6 @@
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
 				<configuration>
-					<parameters>true</parameters>
 					<annotationProcessorPaths>
 						<path>
 							<groupId>org.projectlombok</groupId>
@@ -141,7 +102,6 @@
 						<path>
 							<groupId>io.fluxzero</groupId>
 							<artifactId>sdk</artifactId>
-							<version>${fluxzero.version}</version>
 						</path>
 					</annotationProcessorPaths>
 				</configuration>
@@ -157,7 +117,7 @@
 						<configuration>
 							<rules>
 								<requireMavenVersion>
-									<version>3.9.0</version>
+									<version>3.6.3</version>
 								</requireMavenVersion>
 							</rules>
 						</configuration>
@@ -185,9 +145,9 @@
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>exec-maven-plugin</artifactId>
-				<version>3.6.4</version>
+				<version>3.4.1</version>
 				<configuration>
-					<mainClass>io.fluxzero.training.setup.SetupCheck</mainClass>
+					<mainClass>io.fluxzero.training.meepleverse.Meepleverse</mainClass>
 					<includePluginDependencies>false</includePluginDependencies>
 					<classpathScope>test</classpathScope>
 				</configuration>

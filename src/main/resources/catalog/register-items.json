@@ -1,0 +1,320 @@
+{
+  "@class": "RegisterItems",
+  "items": [
+    {
+      "itemId": "ark-nova",
+      "details": {
+        "name": "Ark Nova",
+        "category": "strategy",
+        "releaseDate": "2022-04-01",
+        "price": "70"
+      }
+    },
+    {
+      "itemId": "gloomhaven",
+      "details": {
+        "name": "Gloomhaven",
+        "category": "strategy",
+        "releaseDate": "2017-01-01",
+        "price": "150"
+      }
+    },
+    {
+      "itemId": "wingspan",
+      "details": {
+        "name": "Wingspan",
+        "category": "family",
+        "releaseDate": "2019-03-08",
+        "price": "55"
+      }
+    },
+    {
+      "itemId": "terraforming-mars",
+      "details": {
+        "name": "Terraforming Mars",
+        "category": "strategy",
+        "releaseDate": "2016-10-01",
+        "price": "65"
+      }
+    },
+    {
+      "itemId": "spirit-island",
+      "details": {
+        "name": "Spirit Island",
+        "category": "cooperative",
+        "releaseDate": "2017-07-01",
+        "price": "80"
+      }
+    },
+    {
+      "itemId": "brass-birmingham",
+      "details": {
+        "name": "Brass: Birmingham",
+        "category": "strategy",
+        "releaseDate": "2018-05-01",
+        "price": "70"
+      }
+    },
+    {
+      "itemId": "root",
+      "details": {
+        "name": "Root",
+        "category": "strategy",
+        "releaseDate": "2018-08-01",
+        "price": "65"
+      }
+    },
+    {
+      "itemId": "scythe",
+      "details": {
+        "name": "Scythe",
+        "category": "strategy",
+        "releaseDate": "2016-08-01",
+        "price": "75"
+      }
+    },
+    {
+      "itemId": "azul",
+      "details": {
+        "name": "Azul",
+        "category": "family",
+        "releaseDate": "2017-10-26",
+        "price": "40"
+      }
+    },
+    {
+      "itemId": "catan",
+      "details": {
+        "name": "Catan",
+        "category": "family",
+        "releaseDate": "1995-01-01",
+        "price": "45"
+      }
+    },
+    {
+      "itemId": "carcassonne",
+      "details": {
+        "name": "Carcassonne",
+        "category": "family",
+        "releaseDate": "2000-10-01",
+        "price": "35"
+      }
+    },
+    {
+      "itemId": "pandemic",
+      "details": {
+        "name": "Pandemic",
+        "category": "cooperative",
+        "releaseDate": "2008-01-01",
+        "price": "45"
+      }
+    },
+    {
+      "itemId": "ticket-to-ride",
+      "details": {
+        "name": "Ticket to Ride",
+        "category": "family",
+        "releaseDate": "2004-01-01",
+        "price": "50"
+      }
+    },
+    {
+      "itemId": "7-wonders",
+      "details": {
+        "name": "7 Wonders",
+        "category": "strategy",
+        "releaseDate": "2010-01-01",
+        "price": "50"
+      }
+    },
+    {
+      "itemId": "dominion",
+      "details": {
+        "name": "Dominion",
+        "category": "deckbuilding",
+        "releaseDate": "2008-01-01",
+        "price": "45"
+      }
+    },
+    {
+      "itemId": "twilight-struggle",
+      "details": {
+        "name": "Twilight Struggle",
+        "category": "strategy",
+        "releaseDate": "2005-01-01",
+        "price": "60"
+      }
+    },
+    {
+      "itemId": "splendor",
+      "details": {
+        "name": "Splendor",
+        "category": "family",
+        "releaseDate": "2014-01-01",
+        "price": "35"
+      }
+    },
+    {
+      "itemId": "kingdomino",
+      "details": {
+        "name": "Kingdomino",
+        "category": "family",
+        "releaseDate": "2016-01-01",
+        "price": "25"
+      }
+    },
+    {
+      "itemId": "the-crew",
+      "details": {
+        "name": "The Crew: The Quest for Planet Nine",
+        "category": "cooperative",
+        "releaseDate": "2019-01-01",
+        "price": "15"
+      }
+    },
+    {
+      "itemId": "love-letter",
+      "details": {
+        "name": "Love Letter",
+        "category": "party",
+        "releaseDate": "2012-01-01",
+        "price": "12"
+      }
+    },
+    {
+      "itemId": "everdell",
+      "details": {
+        "name": "Everdell",
+        "category": "strategy",
+        "releaseDate": "2018-01-01",
+        "price": "75"
+      }
+    },
+    {
+      "itemId": "patchwork",
+      "details": {
+        "name": "Patchwork",
+        "category": "family",
+        "releaseDate": "2014-01-01",
+        "price": "25"
+      }
+    },
+    {
+      "itemId": "codenames",
+      "details": {
+        "name": "Codenames",
+        "category": "party",
+        "releaseDate": "2015-01-01",
+        "price": "20"
+      }
+    },
+    {
+      "itemId": "dixit",
+      "details": {
+        "name": "Dixit",
+        "category": "party",
+        "releaseDate": "2008-01-01",
+        "price": "35"
+      }
+    },
+    {
+      "itemId": "just-one",
+      "details": {
+        "name": "Just One",
+        "category": "party",
+        "releaseDate": "2018-01-01",
+        "price": "20"
+      }
+    },
+    {
+      "itemId": "clank",
+      "details": {
+        "name": "Clank!: A Deck-Building Adventure",
+        "category": "deckbuilding",
+        "releaseDate": "2016-01-01",
+        "price": "60"
+      }
+    },
+    {
+      "itemId": "isle-of-skye",
+      "details": {
+        "name": "Isle of Skye: From Chieftain to King",
+        "category": "strategy",
+        "releaseDate": "2015-01-01",
+        "price": "40"
+      }
+    },
+    {
+      "itemId": "calico",
+      "details": {
+        "name": "Calico",
+        "category": "family",
+        "releaseDate": "2020-01-01",
+        "price": "35"
+      }
+    },
+    {
+      "itemId": "lost-ruins-of-arnak",
+      "details": {
+        "name": "Lost Ruins of Arnak",
+        "category": "strategy",
+        "releaseDate": "2020-01-01",
+        "price": "65"
+      }
+    },
+    {
+      "itemId": "clue",
+      "details": {
+        "name": "Clue (Cluedo)",
+        "category": "family",
+        "releaseDate": "1949-01-01",
+        "price": "30"
+      }
+    },
+    {
+      "itemId": "risk",
+      "details": {
+        "name": "Risk",
+        "category": "strategy",
+        "releaseDate": "1957-01-01",
+        "price": "40"
+      }
+    },
+    {
+      "itemId": "monopoly",
+      "details": {
+        "name": "Monopoly",
+        "category": "family",
+        "releaseDate": "1935-01-01",
+        "price": "25"
+      }
+    },
+    {
+      "itemId": "chess",
+      "details": {
+        "name": "Chess",
+        "category": "abstract",
+        "releaseDate": "1475-01-01",
+        "price": "20"
+      }
+    },
+    {
+      "itemId": "go",
+      "details": {
+        "name": "Go",
+        "category": "abstract",
+        "releaseDate": "1000-01-01",
+        "price": "20"
+      }
+    },
+    {
+      "itemId": "uno",
+      "details": {
+        "name": "Uno",
+        "category": "party",
+        "releaseDate": "1971-01-01",
+        "price": "10"
+      }
+    }
+  ]
+}

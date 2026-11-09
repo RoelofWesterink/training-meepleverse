@@ -1,0 +1,136 @@
+name: Build and Deploy application
+
+on:
+  workflow_dispatch:
+
+jobs:
+  maven-build:
+    name: Build
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup Java
+        uses: actions/setup-java@v5
+        with:
+          distribution: 'temurin'
+          java-version: '25'
+          cache: 'maven'
+
+      - name: Build with Maven
+        run: mvn -B -T1C package
+
+      - name: Generate Flux Host JWT
+        id: jwt
+        uses: fluxzero-io/fluxzero-jwt-action@v1
+        with:
+          api-key: ${{ secrets.FLUXZERO_API_KEY }}
+
+      - name: Log in to Flux Host Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: registry.fluxzero.io
+          username: ${{ steps.jwt.outputs.userId }}
+          password: ${{ steps.jwt.outputs.token }}
+
+      - name: Extract metadata for meepleverse
+        id: metadata-meepleverse
+        uses: docker/metadata-action@v5
+        with:
+          images: |
+            registry.fluxzero.io/meepleverse
+
+      - name: Build and push meepleverse Docker image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.metadata-meepleverse.outputs.tags }}
+          labels: ${{ steps.metadata-meepleverse.outputs.labels }}
+
+      - name: Deploy meepleverse to Fluxzero cluster
+        uses: fluxzero-io/fluxzero-deploy-action@v1
+        with:
+          cluster-name: "training"
+          application-name: "Meepleverse"
+          image-name: "meepleverse"
+          version: ${{ steps.metadata-meepleverse.outputs.version }}
+          token: ${{ steps.jwt.outputs.token }}
+
+      - name: Extract metadata for supplier
+        id: metadata-supplier
+        uses: docker/metadata-action@v5
+        with:
+          images: |
+            registry.fluxzero.io/supplier
+
+      - name: Build and push supplier Docker image
+        uses: docker/build-push-action@v6
+        with:
+          context: local/supplier
+          push: true
+          tags: ${{ steps.metadata-supplier.outputs.tags }}
+          labels: ${{ steps.metadata-supplier.outputs.labels }}
+
+      - name: Deploy supplier to Fluxzero cluster
+        uses: fluxzero-io/fluxzero-deploy-action@v1
+        with:
+          cluster-name: "training"
+          application-name: "Supplier"
+          image-name: "supplier"
+          version: ${{ steps.metadata-supplier.outputs.version }}
+          token: ${{ steps.jwt.outputs.token }}
+
+      - name: Extract metadata for psp
+        id: metadata-psp
+        uses: docker/metadata-action@v5
+        with:
+          images: |
+            registry.fluxzero.io/psp
+
+      - name: Build and push psp Docker image
+        uses: docker/build-push-action@v6
+        with:
+          context: local/psp
+          push: true
+          tags: ${{ steps.metadata-psp.outputs.tags }}
+          labels: ${{ steps.metadata-psp.outputs.labels }}
+
+      - name: Deploy psp to Fluxzero cluster
+        uses: fluxzero-io/fluxzero-deploy-action@v1
+        with:
+          cluster-name: "training"
+          application-name: "PSP"
+          image-name: "psp"
+          version: ${{ steps.metadata-psp.outputs.version }}
+          token: ${{ steps.jwt.outputs.token }}
+
+      - name: Extract metadata for shipper
+        id: metadata-shipper
+        uses: docker/metadata-action@v5
+        with:
+          images: |
+            registry.fluxzero.io/shipper
+
+      - name: Build and push shipper Docker image
+        uses: docker/build-push-action@v6
+        with:
+          context: local/shipper
+          push: true
+          tags: ${{ steps.metadata-shipper.outputs.tags }}
+          labels: ${{ steps.metadata-shipper.outputs.labels }}
+
+      - name: Deploy shipper to Fluxzero cluster
+        uses: fluxzero-io/fluxzero-deploy-action@v1
+        with:
+          cluster-name: "training"
+          application-name: "Shipper"
+          image-name: "shipper"
+          version: ${{ steps.metadata-shipper.outputs.version }}
+          token: ${{ steps.jwt.outputs.token }}
+

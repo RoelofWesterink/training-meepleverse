@@ -1,55 +1,76 @@
-# Fluxzero training — setup check
+# Meepleverse
 
-Before the training, this repository contains only a small service for checking
-that your local development environment works. The course application and
-exercises will be made available **at the start of the training**.
+This repository contains backend sources used in the **2-day in-person Flux Advanced Training**.
 
-## Prepare your laptop
+## Introduction
 
-Follow the [preparation guide](https://training.fluxzero.io/advanced/preparation/)
-for Windows, macOS or Linux. You need Git, JDK 25, a Java IDE, the Fluxzero CLI
-(course baseline 1.21.6), a browser and a terminal. The repository includes Maven
-wrappers; no separate Maven installation is needed.
+In this training you’ll step into the world of **Meepleverse**, an e-commerce webapp for board games.
 
-```text
-git clone https://github.com/fluxzero-io/meepleverse.git
-cd meepleverse
-fz dev --background --dev-server-version 1.20.10
-fz dev status
+Meepleverse began as a small side project: the owners of a local board game shop hacked together a site over a weekend
+so their loyal customers wouldn’t have to bike across town to pick up games.
+
+What started as a simple service for a few locals quickly exploded in popularity. Gamers from all over the world
+discovered Meepleverse — and demand skyrocketed.
+
+With success came chaos: performance bottlenecks, broken flows, and mysterious bugs. The overwhelmed store owners have
+now called on you, a seasoned Flux practitioner, to help them debug, tune, and stabilize their platform.
+
+Your mission: **make Meepleverse scale** while keeping the orders flowing.
+
+## What you’ll learn
+
+Over the course of two days, you will:
+
+- Explore how Flux works under-the-hood
+- Troubleshoot and fix production issues
+- Repair errors retroactively in running systems
+- Evolve applications while they are in production
+- Discuss custom topics brought in by participants
+- Review recently released and upcoming Flux features
+
+## Setting up
+
+Before continuing, make sure you have created your own fork of
+the [public Meepleverse repository](https://github.com/fluxzero-io/training-meepleverse). Next, clone this fork on your
+machine, then open the project in Intellij IDEA.
+
+## Running the Application
+
+### Prerequisites
+
+- Java 24 or higher
+- Maven 3.6.3+
+
+### Quick Start
+
+Start the complete application stack:
+
+**From IntelliJ IDEA:**
+
+- Run `docker-compose` (only needed once)
+
+This will start:
+
+- Fluxzero Test Server on port 8888
+- Fluxzero Proxy on port 8080
+- OpenSearch Dashboards on localhost:5601
+
+And once everything is running:
+
+- Run `Meepleverse`
+
+### API Endpoints
+
+Once running, you can create new board game orders from `orders.http`.
+
+## Testing
+
+**Using IntelliJ IDEA:**
+
+- Run `All tests`
+
+**Using Maven:**
+
+```bash
+./mvnw test
 ```
-
-Use the local gateway URL reported by the CLI; its port is allocated automatically.
-
-1. Open that URL in your browser. It should say **Your Fluxzero development environment is working.**
-2. Open the same URL followed by `/_fluxzero/dev/` for Devboard.
-3. In **Workspace**, check that `setup-check` is running. In **Tests**, wait for `WelcomeEndpointTest` to pass.
-4. In **Audit trail**, select **Web** instead of **Core** and find **GET /api/status**, the request made by the welcome page.
-5. Import `pom.xml` in your IDE and select JDK 25 for both the project and Maven.
-
-Dev Server manages compilation, application startup, the local Runtime and the
-test run. While it is active, use its test results instead of starting a second
-Maven build. Stop it after checking:
-
-```text
-fz dev stop
-```
-
-Start it once more with the same command to check that restarting also works.
-No account or login is needed for this local setup check. Nothing needs changing
-in the source code; keep the checkout on `main` until the course starts.
-
-## At the start of the training
-
-Wait until your trainers have published the course application. Then stop Dev
-Server, update this same checkout and create your exercise branch:
-
-```text
-fz dev stop
-git pull --ff-only
-git switch -c my/exercise-01
-fz dev --background --dev-server-version 1.20.10
-```
-
-Reload the Maven project in your IDE if prompted. Use the new gateway URL printed
-by the CLI. No fresh clone, merge or reset is needed when updating from this setup
-check with an unchanged working tree.

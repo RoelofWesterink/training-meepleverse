@@ -1,0 +1,64 @@
+GET {{baseUrl}}/catalog
+Accept: application/json
+
+###
+
+POST {{baseUrl}}/orders
+Accept: application/json
+Content-Type: application/json
+
+{
+  "itemIds": [
+    "gloomhaven", "ark-nova"
+  ],
+  "paymentId": "{{$random.uuid}}",
+  "addressee": {
+    "fullName": "Alice Example",
+    "street": "Main Street",
+    "houseNumber": "42A",
+    "postalCode": "12345",
+    "city": "Meepleville",
+    "country": "Netherlands",
+    "email": "alice@example.com",
+    "phone": "+31-612345678"
+  }
+}
+
+###
+< {%
+    request.variables.set("name", [
+        "Alice",
+        "Bob",
+        "Charlie",
+        "Diana",
+        "Eve",
+        "Frank",
+        "Grace",
+        "Heidi",
+        "Ivan",
+        "Judy",
+        "Mallory",
+        "Niaj",
+        "Olivia"
+    ])
+%}
+POST {{baseUrl}}/orders
+Accept: application/json
+Content-Type: application/json
+
+{
+  "itemIds": [
+    "gloomhaven", "ark-nova"
+  ],
+  "paymentId": "{{$random.uuid}}",
+  "addressee": {
+    "fullName": "{{name}}",
+    "street": "Main Street",
+    "houseNumber": "42A",
+    "postalCode": "12345",
+    "city": "Meepleville",
+    "country": "Netherlands",
+    "email": "{{name}}@example.com",
+    "phone": "+31-612345678"
+  }
+}

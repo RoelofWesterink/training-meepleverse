@@ -54,7 +54,6 @@ pids
 *.pid
 *.seed
 *.pid.lock
-.fluxzero/dev/
 
 # Dependency directories
 node_modules/
