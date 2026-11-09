@@ -9,11 +9,13 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 
 @NoUserRequired
-public record PlaceOrder(OrderId orderId, @NotNull @Valid OrderDetails details) implements OrderUpdate {
+public record PlaceOrder(OrderId orderId, @NotNull @Valid OrderDetails details, String customerId) implements OrderUpdate {
+
+    public PlaceOrder(OrderId orderId, OrderDetails details) { this(orderId, details, null); }
 
     @Apply
     Order apply() {
-        return new Order(orderId, details);
+        return new Order(orderId, details, customerId);
     }
 
 }

@@ -1,6 +1,6 @@
 services:
   fluxzero-runtime:
-    image: ghcr.io/fluxzero-io/fluxzero-sdk-java/fluxzero-test:1.20.0
+    image: ghcr.io/fluxzero-io/fluxzero-sdk-java/fluxzero-test:1.56.0
     environment:
       - FLUXZERO_LOG_RETENTION=PT30M
     healthcheck:
@@ -10,7 +10,7 @@ services:
       - "8888:8888"
 
   meepleverse:
-    image: ghcr.io/fluxzero-io/fluxzero-sdk-java/fluxzero-proxy:1.20.0
+    image: ghcr.io/fluxzero-io/fluxzero-sdk-java/fluxzero-proxy:1.56.0
     environment:
       - FLUXZERO_BASE_URL=http://fluxzero-runtime:8888
       - FLUXZERO_APPLICATION_NAME=meepleverse-proxy

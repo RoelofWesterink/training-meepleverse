@@ -16,9 +16,14 @@ import java.util.List;
 @NoUserRequired
 public class CatalogEndpoint {
 
+    @HandleGet("/browse")
+    SearchItems.Result browse(@QueryParam String term, @QueryParam String category) {
+        return Fluxzero.queryAndWait(new SearchItems(term, category));
+    }
+
     @HandleGet
     List<Item> getItems(@QueryParam String term) {
-        return Fluxzero.queryAndWait(new SearchItems(term));
+        return Fluxzero.queryAndWait(new SearchItems(term)).items().stream().limit(100).toList();
     }
 
 }

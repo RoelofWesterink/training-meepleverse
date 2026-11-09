@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>io.fluxzero.training</groupId>
+    <artifactId>course-services</artifactId>
+    <version>1</version>
+    <packaging>pom</packaging>
+    <modules>
+        <module>psp</module>
+        <module>supplier</module>
+        <module>shipper</module>
+    </modules>
+    <repositories>
+        <repository>
+            <id>fluxzero</id>
+            <url>https://packages.fluxzero.io/maven</url>
+        </repository>
+    </repositories>
+    <dependencies>
+        <!-- Dev Server reads the SDK version from Maven; each executable JAR supplies its own classes. -->
+        <dependency>
+            <groupId>io.fluxzero</groupId>
+            <artifactId>sdk</artifactId>
+            <version>1.292.49</version>
+            <type>pom</type>
+            <exclusions>
+                <exclusion><groupId>*</groupId><artifactId>*</artifactId></exclusion>
+            </exclusions>
+        </dependency>
+    </dependencies>
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <artifactId>maven-antrun-plugin</artifactId>
+                    <version>3.2.0</version>
+                    <executions>
+                        <execution>
+                            <id>open-service-jar</id>
+                            <phase>process-resources</phase>
+                            <goals><goal>run</goal></goals>
+                            <configuration>
+                                <target>
+                                    <unzip src="${project.basedir}/${project.artifactId}.jar"
+                                           dest="${project.build.outputDirectory}"/>
+                                </target>
+                            </configuration>
+                        </execution>
+                    </executions>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
+</project>

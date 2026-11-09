@@ -1,0 +1,30 @@
+---
+version: 1
+milestones:
+- id: "meepleverse-storefront"
+  title: "Meepleverse storefront"
+  description: "Browse games, place a demo order and follow the real course backend."
+  features:
+  - id: "shop-order-journey"
+    title: "Browse games and follow a demo order"
+    kind: "feature"
+    status: "done"
+    description: ""
+    acceptance:
+    - "Catalog, basket and guest checkout work with the existing backend."
+    - "Order pages show observed progress and failures without simulating success."
+    - "The existing course delays and failures remain intact."
+    - "Participants use the existing Dev Server without a frontend toolchain."
+    createdAt: "2026-11-05T16:10:47.165057Z"
+    updatedAt: "2026-11-05T16:39:46.398771Z"
+    history:
+    - at: "2026-11-05T16:10:47.165057Z"
+      status: "in_progress"
+      verification: ""
+    - at: "2026-11-05T16:39:46.398771Z"
+      status: "done"
+      verification: "Verified locally: live catalog, two-item order through payment/supplier/shipping,\
+        \ existing shipping-failure scenario, recent-order reload, search and mobile\
+        \ layout. Ten focused backend tests passed; checkout code checks covered duplicate\
+        \ submission and uncertain responses. Windows qualification remains part of\
+        \ course preparation."

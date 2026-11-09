@@ -50,6 +50,8 @@ bin/
 *.log
 
 # Runtime data
+**/.fluxzero/dev/
+/.fluxzero/shop-sessions/
 pids
 *.pid
 *.seed

@@ -1,0 +1,14 @@
+version: 1
+idp: managed
+projects:
+  meepleverse:
+    directory: .
+  externals:
+    directory: local
+    apps: [psp, supplier-local, shipper]
+    applicationConfig:
+      supplier-local:
+        application: supplier
+        applicationName: supplier-service
+        env:
+          MEEPLEVERSE_URL: ""
