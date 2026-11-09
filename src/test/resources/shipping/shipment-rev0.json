@@ -1,0 +1,23 @@
+{
+  "@class": "io.fluxzero.common.api.Data",
+  "value": {
+    "@class": "com.fasterxml.jackson.databind.JsonNode",
+    "shipmentId": "1",
+    "details": {
+      "itemId": "ark-nova",
+      "orderId": "order2",
+      "addressee": {
+        "fullName": "Alice Example",
+        "street": "Main Street",
+        "houseNumber": "42A",
+        "postalCode": "12345",
+        "city": "Meepleville",
+        "country": "Netherlands",
+        "email": "alice@example.com",
+        "phone": "+31-612345678"
+      }
+    }
+  },
+  "type": "io.fluxzero.training.meepleverse.shipping.api.model.Shipment",
+  "revision": 0
+}

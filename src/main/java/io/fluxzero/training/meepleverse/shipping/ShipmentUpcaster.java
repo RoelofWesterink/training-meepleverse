@@ -10,6 +10,15 @@ public class ShipmentUpcaster {
 
     @Upcast(type = "io.fluxzero.training.meepleverse.shipping.api.ShipmentSent", revision = 0)
     JsonNode upcastShipmentSent(ObjectNode payload) {
+        return asItemList(payload);
+    }
+
+    @Upcast(type = "io.fluxzero.training.meepleverse.shipping.api.model.Shipment", revision = 0)
+    JsonNode upcastShipment(ObjectNode payload) {
+        return asItemList(payload);
+    }
+
+    private ObjectNode asItemList(ObjectNode payload) {
         ObjectNode details = payload.withObject("details");
         details.putArray("itemIds").add(details.remove("itemId"));
         return payload;
