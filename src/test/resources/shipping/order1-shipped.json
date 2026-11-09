@@ -1,6 +1,6 @@
 {
   "@class": "ShipmentSent",
-  "shipmentId": "0",
+  "shipmentId": "order1-shipment",
   "details": {
     "itemIds": ["gloomhaven"],
     "orderId": "order1",

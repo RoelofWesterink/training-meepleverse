@@ -1,8 +1,8 @@
 {
   "@class": "ShipmentSent",
-  "shipmentId": "1",
+  "shipmentId": "order2-shipment",
   "details": {
-    "itemIds": ["ark-nova"],
+    "itemIds": ["gloomhaven", "ark-nova"],
     "orderId": "order2",
     "addressee": {
       "fullName": "Alice Example",

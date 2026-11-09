@@ -8,6 +8,7 @@ import io.fluxzero.training.meepleverse.catalog.CatalogHandler;
 import io.fluxzero.training.meepleverse.orders.api.AbortOrder;
 import io.fluxzero.training.meepleverse.payments.api.PaymentAccepted;
 import io.fluxzero.training.meepleverse.payments.api.PaymentRejected;
+import io.fluxzero.training.meepleverse.payments.api.model.PaymentId;
 import io.fluxzero.training.meepleverse.payments.api.ValidatePayment;
 import io.fluxzero.training.meepleverse.shipping.api.SendShipment;
 import io.fluxzero.training.meepleverse.shipping.api.ShippingFailed;
@@ -20,7 +21,7 @@ import org.junit.jupiter.api.Test;
 import java.util.Map;
 
 class OrderFulfillmentTest {
-    final TestFixture fixture = TestFixture.create(CatalogHandler.class, OrderFulfillment.class)
+    final TestFixture fixture = TestFixture.create(CatalogHandler.class, OrderFulfillment.class, ShipmentWorkflow.class)
             .givenCommands("/catalog/register-items.json");
 
     @Nested
@@ -51,11 +52,30 @@ class OrderFulfillmentTest {
         void shipTwoItems() {
             fixture.givenCommands("/orders/place-order-double.json")
                     .whenEvent("/supply/backorder-arrived-order2-item-gloomhaven.json")
-                    .expectEvents("/shipping/order2-shipped-gloomhaven.json")
+                    .expectNoCommandsLike(SendShipment.class)
+                    .andThen()
+                    .whenEvent("/supply/backorder-arrived-order2-item-gloomhaven.json")
+                    .expectNoCommandsLike(SendShipment.class)
                     .andThen()
                     .whenEvent("/supply/backorder-arrived-order2-item-ark-nova.json")
-                    .expectEvents("/shipping/order2-shipped-ark-nova.json");
+                    .expectEvents("/shipping/order2-shipped.json")
+                    .andThen()
+                    .whenEvent("/supply/backorder-arrived-order2-item-ark-nova.json")
+                    .expectNoCommandsLike(SendShipment.class);
         }
+    }
+
+    @Test
+    void arrivalsBeforePaymentWaitForTheCorrectOrder() {
+        TestFixture.create(CatalogHandler.class, ShipmentWorkflow.class, new ExternalsMock())
+                .givenCommands("/catalog/register-items.json", "/orders/place-order-double.json")
+                .givenEvents("/supply/backorder-arrived-order2-item-ark-nova.json")
+                .whenEvent("/supply/backorder-arrived-order2-item-gloomhaven.json")
+                .expectNoCommandsLike(SendShipment.class)
+                .andThen().whenEvent(new PaymentAccepted(new PaymentId("other-payment"), "another-order"))
+                .expectNoCommandsLike(SendShipment.class)
+                .andThen().whenEvent(new PaymentAccepted(new PaymentId("payment1"), "order2"))
+                .expectEvents("/shipping/order2-shipped.json");
     }
 
     @Test
