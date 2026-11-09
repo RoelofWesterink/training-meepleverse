@@ -23,7 +23,7 @@ Use the local gateway URL reported by the CLI; its port is allocated automatical
 1. Open that URL in your browser. It should say **Your Fluxzero development environment is working.**
 2. Open the same URL followed by `/_fluxzero/dev/` for Devboard.
 3. In **Workspace**, check that `setup-check` is running. In **Tests**, wait for `WelcomeEndpointTest` to pass.
-4. In **Audit trail**, find the web request from opening the welcome page.
+4. In **Audit trail**, select **Web** instead of **Core** and find **GET /api/status**, the request made by the welcome page.
 5. Import `pom.xml` in your IDE and select JDK 25 for both the project and Maven.
 
 Dev Server manages compilation, application startup, the local Runtime and the
