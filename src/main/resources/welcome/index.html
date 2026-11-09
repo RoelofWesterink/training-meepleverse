@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>You're ready! · Fluxzero Training</title>
+  <link rel="icon" href="fluxzero-logo.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="welcome.css">
+  <script src="welcome.js" defer></script>
+</head>
+<body>
+  <div id="confetti" aria-hidden="true"></div>
+  <header><img src="fluxzero-logo.svg" alt="Fluxzero" width="180" height="40"></header>
+  <main>
+    <div class="badge" aria-hidden="true"><svg viewBox="0 0 48 48"><path d="m12 25 8 8 17-19"/></svg></div>
+    <p class="eyebrow">Fluxzero Advanced Training</p>
+    <div role="status" aria-live="polite">
+      <h1 id="title">One moment…</h1>
+      <p id="message" class="lead">Checking your development environment.</p>
+    </div>
+    <p id="next">We’re asking the Java service to say hello.</p>
+    <div id="success" hidden>
+      <p class="welcome">Laptop ready. Let’s build something great.</p>
+      <div class="actions">
+        <a class="primary" href="/_fluxzero/dev/">Open Devboard <span aria-hidden="true">↗</span></a>
+        <button id="celebrate" type="button">More confetti!</button>
+      </div>
+      <p class="note">Check your test results and audit trail in Devboard.<br>The course application will arrive when the training starts.</p>
+    </div>
+    <button id="retry" type="button" hidden>Try again</button>
+    <noscript><p>Enable JavaScript for this check, or open <a href="/api/status">the service response</a> directly.</p></noscript>
+  </main>
+  <footer>See you at the training.</footer>
+</body>
+</html>

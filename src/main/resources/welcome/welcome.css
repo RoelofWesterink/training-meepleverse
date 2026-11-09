@@ -1,0 +1,32 @@
+@font-face { font-family: Poppins; src: url('poppins-400.woff2'); font-weight: 400; font-display: swap; }
+@font-face { font-family: Poppins; src: url('poppins-600.woff2'); font-weight: 600; font-display: swap; }
+:root { color-scheme: dark; font-family: Poppins, system-ui, sans-serif; color: #f4f7ff; background: #0a0a0a; }
+* { box-sizing: border-box; }
+body { margin: 0; min-height: 100svh; display: flex; flex-direction: column; background: radial-gradient(ellipse at 50% 45%, #142d414d, transparent 65%); }
+header { padding: 32px 6vw; }
+header img { display: block; }
+main { margin: auto; padding: 30px 24px 60px; width: min(100%, 860px); text-align: center; }
+.badge { display: grid; place-items: center; width: 94px; height: 94px; margin: 0 auto 28px; border: 1px solid #38566f; border-radius: 50%; background: #142332; opacity: .3; }
+.badge svg { width: 44px; fill: none; stroke: #bcdef5; stroke-width: 4; stroke-linecap: round; stroke-linejoin: round; }
+body.ready .badge { opacity: 1; box-shadow: 0 0 90px #74b5e333; }
+.eyebrow { text-transform: uppercase; letter-spacing: .18em; font-size: 12px; color: #a7b4c8; }
+h1 { margin: 12px 0 16px; font-size: clamp(48px, 9vw, 92px); line-height: 1.12; letter-spacing: -.055em; font-weight: 600; }
+body.ready h1 { color: #c2e4fb; }
+.lead { font-size: clamp(17px, 2.6vw, 22px); margin: 0 auto; max-width: 640px; color: #dce6f2; }
+#next, .note, footer { color: #a7b4c8; }
+.welcome { margin: 22px 0 32px; color: #a7b4c8; }
+.actions { display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; }
+a, button { font: inherit; }
+button, .primary { border: 1px solid #58768e; border-radius: 8px; padding: 13px 22px; background: #13202d; color: #e7f3fe; text-decoration: none; cursor: pointer; }
+.primary { background: #c2e4fb; color: #112131; border-color: #c2e4fb; }
+button:hover { background: #21384a; }
+.primary:hover { background: #d7efff; }
+:focus-visible { outline: 3px solid #f4cf7d; outline-offset: 5px; }
+.note { margin-top: 30px; font-size: 12px; line-height: 1.9; }
+footer { padding: 20px 24px; text-align: center; font-size: 12px; }
+[hidden] { display: none !important; }
+#confetti { position: fixed; inset: 0; pointer-events: none; overflow: hidden; z-index: 2; }
+.confetto { position: absolute; top: -24px; width: 8px; height: 13px; border-radius: 2px; animation: fall var(--duration) var(--delay) linear forwards; }
+@keyframes fall { to { transform: translate(var(--drift), calc(100vh + 48px)) rotate(var(--rotation)); } }
+@media (max-width: 500px) { header { padding: 24px; } header img { width: 145px; height: auto; } main { padding-top: 20px; } .badge { width: 76px; height: 76px; } }
+@media (prefers-reduced-motion: reduce) { #confetti, #celebrate { display: none; } }
