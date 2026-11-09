@@ -11,6 +11,10 @@ import io.fluxzero.sdk.web.WebRequest;
 import io.fluxzero.sdk.web.WebResponse;
 import io.fluxzero.training.meepleverse.authentication.Sender;
 import io.fluxzero.training.meepleverse.common.SendWebRequest;
+import io.fluxzero.training.meepleverse.orders.api.model.Order;
+import io.fluxzero.training.meepleverse.orders.api.model.OrderId;
+import io.fluxzero.training.meepleverse.payments.PaymentRetries;
+import io.fluxzero.training.meepleverse.payments.api.model.Payment;
 import io.fluxzero.training.meepleverse.payments.api.model.PaymentId;
 import jakarta.validation.constraints.NotNull;
 import lombok.Value;
@@ -20,7 +24,7 @@ import static io.fluxzero.sdk.configuration.ApplicationProperties.requirePropert
 
 @Value
 @TrackSelf
-@Consumer(name = "payments")
+@Consumer(name = "payments-v2", minIndex = 0, errorHandler = PaymentRetries.class)
 public class ValidatePayment extends SendWebRequest implements Request<Boolean> {
     String proxyConsumer = "proxy-payments";
 
@@ -30,6 +34,14 @@ public class ValidatePayment extends SendWebRequest implements Request<Boolean> 
 
     @Override
     public Boolean handle(Sender sender) {
+        Payment recorded = Fluxzero.loadEntityValue(paymentId);
+        if (recorded != null && reference.equals(recorded.reference())) {
+            return recorded.accepted();
+        }
+        Order order = Fluxzero.loadEntityValue(new OrderId(reference));
+        if (order != null && order.aborted()) {
+            return false;
+        }
         boolean accepted = (Boolean) super.handle(sender);
         Fluxzero.loadAggregate(paymentId).apply(
                 accepted ? new PaymentAccepted(paymentId, reference) : new PaymentRejected(paymentId, reference));
