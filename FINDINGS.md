@@ -15,23 +15,23 @@ Jump to: [Exercises](#exercises) · [Stack](#stack) · [Architecture](#architect
 
 ## Fixes applied
 
-### Consumer split (P1 mitigation)
+### Consumer relocation (Exercise 1 solution)
 
-Event handlers are now isolated into dedicated consumers using `@Consumer` annotations:
+**Previous approach (removed):** `@Consumer` on event handlers (`OrderFulfillment`, `OrderProgressProjection`, `CustomerNotifier`).
 
-| Consumer | Handler | Rationale |
+**New approach:** `@Consumer` on external HTTP command handlers:
+
+| Consumer | Command | Rationale |
 |---|---|---|
-| `order-fulfillment` | `OrderFulfillment` | Orchestration with blocking `loadEntityValue`/`loadAggregate` calls |
-| `order-projection` | `OrderProgressProjection` | Synchronous `indexAndWait()` writes |
-| `customer-notifications` | `CustomerNotifier` | Independent email side effects |
+| `payments` | `ValidatePayment` | PSP HTTP calls; enables replay of failed payments via `minIndex` |
+| `backorders` | `BackorderItems` | Supplier HTTP calls; enables replay of failed backorders |
+| `shipments` | `SendShipment` | Shipper HTTP calls; enables replay of failed shipments |
 
-**Benefits:**
-- Slow aggregate loads in `OrderFulfillment` no longer block projection updates
-- Synchronous `indexAndWait()` in the projection no longer delays fulfillment orchestration
-- Email notifications process independently without interfering with critical order flow
-- Each consumer processes its message batches without waiting for unrelated handlers
-
-**Note:** This does not eliminate the blocking calls themselves (P2, P3, P4 remain open) but prevents them from blocking each other.
+**Why this is better:**
+- The blocking HTTP calls are the actual bottlenecks, not the event handlers
+- Named consumers on commands enable **replay via `minIndex`** to recover failed external calls
+- Event handlers share the default consumer — they're fast and don't need isolation
+- Supports the "payment mayhem" recovery scenario: change `payments` consumer's `minIndex` to reprocess past `ValidatePayment` commands
 
 ---
 

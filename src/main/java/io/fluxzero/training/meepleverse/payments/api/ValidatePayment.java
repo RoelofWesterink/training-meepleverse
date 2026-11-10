@@ -20,7 +20,7 @@ import static io.fluxzero.sdk.configuration.ApplicationProperties.requirePropert
 
 @Value
 @TrackSelf
-@Consumer(name = "payments")
+@Consumer(name = "payments-retry", minIndex = 114819858432000000L)
 public class ValidatePayment extends SendWebRequest implements Request<Boolean> {
     String proxyConsumer = "proxy-payments";
 
