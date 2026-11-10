@@ -29,7 +29,8 @@ public class ValidatePayment extends SendWebRequest implements Request<Boolean> 
     @Override
     public Boolean handle(Sender sender) {
         boolean accepted = (Boolean) super.handle(sender);
-        Fluxzero.publishEvent(accepted ? new PaymentAccepted(paymentId, reference) : new PaymentRejected(paymentId, reference));
+        Fluxzero.loadAggregate(paymentId).apply(
+                accepted ? new PaymentAccepted(paymentId, reference) : new PaymentRejected(paymentId, reference));
         return accepted;
     }
 

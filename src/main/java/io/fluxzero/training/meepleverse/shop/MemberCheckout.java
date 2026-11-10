@@ -11,7 +11,10 @@ import io.fluxzero.training.meepleverse.orders.view.OrderStatus;
 import io.fluxzero.training.meepleverse.payments.api.model.PaymentId;
 import org.springframework.stereotype.Component;
 
-import java.util.*;
+import java.util.HashSet;
+import java.util.UUID;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
 import static io.fluxzero.sdk.tracking.handling.validation.ValidationUtils.isValid;
@@ -67,7 +70,7 @@ public class MemberCheckout {
         if (member == null) return CompletableFuture.completedFuture(denied());
         var ids = purchase == null ? null : purchase.itemIds();
         if (ids == null || ids.isEmpty() || ids.size() > 100 || ids.size() != new HashSet<>(ids).size()
-                || ids.stream().anyMatch(Objects::isNull)) {
+                || ids.stream().anyMatch(id -> id == null || Fluxzero.loadAggregate(id).get() == null)) {
             return CompletableFuture.completedFuture(noStore().status(400).payload("Choose available games").build());
         }
         var id = Fluxzero.generateId(OrderId.class);
