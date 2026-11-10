@@ -1,6 +1,5 @@
 package io.fluxzero.training.meepleverse.notifications;
 
-import io.fluxzero.sdk.tracking.Consumer;
 import io.fluxzero.sdk.tracking.handling.HandleEvent;
 import io.fluxzero.training.meepleverse.orders.api.AbortOrder;
 import io.fluxzero.training.meepleverse.orders.api.PlaceOrder;
@@ -13,7 +12,6 @@ import org.springframework.stereotype.Component;
 import static io.fluxzero.sdk.Fluxzero.sendAndForgetCommand;
 
 @Component
-@Consumer(name = "customer-notifications")
 @Slf4j
 public class CustomerNotifier {
 
