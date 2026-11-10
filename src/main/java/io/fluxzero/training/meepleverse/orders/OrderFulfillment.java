@@ -1,6 +1,7 @@
 package io.fluxzero.training.meepleverse.orders;
 
 import io.fluxzero.sdk.Fluxzero;
+import io.fluxzero.sdk.tracking.Consumer;
 import io.fluxzero.sdk.tracking.handling.HandleEvent;
 import io.fluxzero.training.meepleverse.orders.api.AbortOrder;
 import io.fluxzero.training.meepleverse.orders.api.PlaceOrder;
@@ -18,6 +19,7 @@ import io.fluxzero.training.meepleverse.supplier.BackorderedItemArrived;
 import org.springframework.stereotype.Component;
 
 @Component
+@Consumer(name = "order-fulfillment")
 public class OrderFulfillment {
 
     @HandleEvent

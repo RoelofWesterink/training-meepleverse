@@ -1,6 +1,7 @@
 package io.fluxzero.training.meepleverse.orders.view;
 
 import io.fluxzero.sdk.Fluxzero;
+import io.fluxzero.sdk.tracking.Consumer;
 import io.fluxzero.sdk.tracking.handling.HandleEvent;
 import io.fluxzero.training.meepleverse.orders.api.AbortOrder;
 import io.fluxzero.training.meepleverse.orders.api.PlaceOrder;
@@ -19,6 +20,7 @@ import java.util.List;
 import static io.fluxzero.training.meepleverse.orders.view.OrderObservation.Kind.*;
 
 @Component
+@Consumer(name = "order-projection")
 public class OrderProgressProjection {
     @HandleEvent
     void on(PlaceOrder event, Instant timestamp) {
