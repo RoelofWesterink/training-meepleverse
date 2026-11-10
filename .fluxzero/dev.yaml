@@ -1,4 +1,7 @@
 version: 1
+runtime:
+  env:
+    FLUXZERO_LOG_RETENTION: P2D
 idp: managed
 projects:
   meepleverse:

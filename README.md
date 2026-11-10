@@ -14,7 +14,21 @@ Keep this course on SDK 1.x when changing examples or consulting documentation.
 The existing unit tests use in-memory fixtures and mock the external payment, supplier and shipping services.
 They can be run without Docker using the Maven wrapper shown below.
 
-For local development with the Fluxzero CLI, run `fz dev --background --dev-server-version 1.20.10` from this directory.
+For local development with the Fluxzero CLI, run `fz dev --background` from this directory.
+Use Dev Server **1.21.0 or newer** for `runtime.env` support. Start without an older `--dev-server-version` override.
+
+Before starting day 2, update this checkout and restart the Dev Server:
+
+```sh
+fz dev stop
+fz dev --background
+```
+
+The same commands work in Windows PowerShell, Command Prompt, macOS and Linux.
+Stopping clears the in-memory course data. Place new orders and wait for shipments before starting exercise 3.
+The repository configures two days of Test Server log retention in `.fluxzero/dev.yaml`, so replay and document
+migration still work after explanations and breaks. Application reloads retain that data; stopping the entire
+Dev Server clears it. Auditlog retention is separate. The startup link opens Devboard, with App preview for the shop.
 The Dev Server selects the matching SDK 1.x Test Server and Proxy, compiles the applications and manages their tests.
 The application initializes the catalog at startup. The Dev Server starts the local IDP from Fluxzero IDP test-support. There is no external account or separate IDP installation.
 The configuration starts Meepleverse and the bundled PSP, supplier and shipper JARs on the same local runtime.
@@ -84,8 +98,8 @@ git diff HEAD origin/solution-exercise-01
 Stage any new exercise files by name before committing. If you have no changes, skip the commit. To start exercise 2 from the trainer checkpoint, use `git switch -c my/exercise-02 origin/solution-exercise-01` after saving your work. Your first branch stays available. You can also continue on your own branch. The same steps work in PowerShell, Terminal and Git Bash.
 
 A fork is optional. Open this folder in your Java IDE with JDK 25 selected for
-both the project and Maven. The CLI baseline is 1.21.6; it starts the explicitly
-selected Dev Server 1.20.10 without upgrading the application's SDK.
+both the project and Maven. The CLI baseline is 1.21.6; it resolves the latest
+compatible Dev Server without upgrading the application's SDK.
 
 ## Running the Application
 
@@ -100,7 +114,7 @@ selected Dev Server 1.20.10 without upgrading the application's SDK.
 From the repository directory, in a terminal or Windows PowerShell:
 
 ```text
-fz dev --background --dev-server-version 1.20.10
+fz dev --background
 fz dev status --json
 ```
 
@@ -109,7 +123,7 @@ without WinGet or Homebrew, follow the manual JDK instructions in the preparatio
 The CLI downloads Dev Server and uses the repository's Maven wrapper; no separate Maven
 installation or wrapper check is needed before the first start. Select JDK 25 in your IDE too.
 
-Open the reported gateway URL followed by `/_fluxzero/dev/` for the Devboard.
+Open the Devboard URL printed by the startup command.
 Use Workspace, Tests and Audit trail to inspect the application, test results and messages.
 The Dev Server manages the local Test Server, Proxy and auditlog storage; a separate OpenSearch setup is not required.
 
