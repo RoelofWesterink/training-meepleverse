@@ -26,13 +26,15 @@ public class OrderFulfillment {
     }
 
     @HandleEvent
-    void handle(PaymentAccepted event, Order order) {
+    void handle(PaymentAccepted event) {
+        var order = Fluxzero.<Order>loadEntityValue(event.reference());
         Fluxzero.sendAndForgetCommand(new BackorderItems(order.details().itemIds(), order.orderId(),
                                                          order.details().addressee().fullName()));
     }
 
     @HandleEvent
-    void handle(PaymentRejected event, Order order) {
+    void handle(PaymentRejected event) {
+        var order = Fluxzero.<Order>loadEntityValue(event.reference());
         Fluxzero.sendAndForgetCommand(new AbortOrder(order.orderId(), "Payment rejected"));
     }
 
@@ -42,7 +44,8 @@ public class OrderFulfillment {
     }
 
     @HandleEvent
-    void handle(BackorderedItemArrived event, Order order) {
+    void handle(BackorderedItemArrived event) {
+        var order = Fluxzero.loadAggregate(event.orderId()).get();
         Fluxzero.sendAndForgetCommand(new SendShipment(Fluxzero.generateId(ShipmentId.class),
                                                       new ShipmentDetails(event.itemId(), order.orderId(),
                                                                        order.details().addressee())));
