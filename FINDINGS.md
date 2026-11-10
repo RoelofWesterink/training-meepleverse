@@ -5,11 +5,33 @@
 | Category | IDs | Status |
 |---|---|---|
 | Bugs / flaws | B1–B5 | open |
-| Performance | P1–P7 | P1, P2 fixed |
-| Race / consumer issues | R1–R7 | open |
-| Likely exercises | Ex 6 confirmed; Ex B2, R1, R2, R5, R6, R7, P4 probable | see [Exercises](#exercises) |
+| Performance | P1, P3–P7 | P1 fixed via consumer split |
+| Race / consumer issues | R1–R7 | R4 mitigated via consumer split |
+| Likely exercises | Ex 6 confirmed; Ex B2, R1, R2, R5, R6, R7, P3 probable | see [Exercises](#exercises) |
 
-Jump to: [Exercises](#exercises) · [Stack](#stack) · [Architecture](#architecture) · [Aggregates](#aggregates) · [Commands](#commands) · [Events](#events) · [Event handlers](#event-handlers) · [Queries](#queries) · [Web endpoints](#web-endpoints) · [Auth](#authentication--authorisation) · [Projections](#projections--search) · [Order flow](#order-flow) · [Issues](#issues)
+Jump to: [Exercises](#exercises) · [Stack](#stack) · [Architecture](#architecture) · [Aggregates](#aggregates) · [Commands](#commands) · [Events](#events) · [Event handlers](#event-handlers) · [Queries](#queries) · [Web endpoints](#web-endpoints) · [Auth](#authentication--authorisation) · [Projections](#projections--search) · [Order flow](#order-flow) · [Issues](#issues) · [Fixes applied](#fixes-applied)
+
+---
+
+## Fixes applied
+
+### Consumer split (P1 mitigation)
+
+Event handlers are now isolated into dedicated consumers using `@Consumer` annotations:
+
+| Consumer | Handler | Rationale |
+|---|---|---|
+| `order-fulfillment` | `OrderFulfillment` | Orchestration with blocking `loadEntityValue`/`loadAggregate` calls |
+| `order-projection` | `OrderProgressProjection` | Synchronous `indexAndWait()` writes |
+| `customer-notifications` | `CustomerNotifier` | Independent email side effects |
+
+**Benefits:**
+- Slow aggregate loads in `OrderFulfillment` no longer block projection updates
+- Synchronous `indexAndWait()` in the projection no longer delays fulfillment orchestration
+- Email notifications process independently without interfering with critical order flow
+- Each consumer processes its message batches without waiting for unrelated handlers
+
+**Note:** This does not eliminate the blocking calls themselves (P2, P3, P4 remain open) but prevents them from blocking each other.
 
 ---
 
@@ -121,11 +143,15 @@ Web request
   → @HandlePost / @HandleGet  (endpoint)
     → sendCommand / sendAndForgetCommand
       → @HandleCommand  (mutates aggregate → persists event)
-        → @HandleEvent listeners (all fire independently):
-            OrderFulfillment       → sends next command
-            OrderProgressProjection → writes read-model
-            CustomerNotifier       → sends notification
+        → @HandleEvent listeners (each in its own consumer):
+            OrderFulfillment        [order-fulfillment]    → sends next command
+            OrderProgressProjection [order-projection]     → writes read-model
+            CustomerNotifier        [customer-notifications] → sends notification
 ```
+
+### Consumer isolation
+
+Each event handler class runs in its own dedicated consumer (via `@Consumer` annotation). This prevents slow handlers from blocking others when processing event batches.
 
 ### `@TrackSelf` — audit logging
 
@@ -142,32 +168,40 @@ Two patterns in this codebase:
 | Pattern | Used by | Behaviour |
 |---|---|---|
 | Interface default | `OrderUpdate`, `ShipmentUpdate`, `UserCommand` | `loadAggregate().assertAndApply(this)` shared across all implementing commands |
-| External call | `ValidatePayment`, `BackorderItems`, `SendShipment` | Extends `SendWebRequest`; makes a blocking HTTP call instead of mutating local state |
+| External call | `ValidatePayment`, `BackorderItems`, `SendShipment` | Extends `SendWebRequest`; makes a blocking HTTP call, then applies events |
 
 ### `@HandleEvent` — reacts to facts
 
-Events are already-persisted facts. Multiple handlers receive the same event independently.
+Events are already-persisted facts. Multiple handlers receive the same event independently, each in their own consumer.
 
-| Role | Class | What it does |
-|---|---|---|
-| Orchestration | `OrderFulfillment` | Sends the next command in the pipeline |
-| Projection | `OrderProgressProjection` | Writes a read-model document |
-| Side effects | `CustomerNotifier` | Sends email notifications |
+| Role | Class | Consumer | What it does |
+|---|---|---|---|
+| Orchestration | `OrderFulfillment` | `order-fulfillment` | Sends the next command in the pipeline |
+| Projection | `OrderProgressProjection` | `order-projection` | Writes a read-model document |
+| Side effects | `CustomerNotifier` | `customer-notifications` | Sends email notifications |
 
-Framework aggregate injection — no explicit `loadAggregate` needed:
+**Aggregate loading in handlers:**
 
-```java
-void handle(PaymentAccepted event, Order order)   // injects matching aggregate
-void on(PlaceOrder event, Instant timestamp)       // injects event timestamp
-```
+`OrderFulfillment` uses explicit aggregate loading (not framework injection):
+- `handle(PaymentAccepted)`: `Fluxzero.<Order>loadEntityValue(event.reference())`
+- `handle(PaymentRejected)`: `Fluxzero.<Order>loadEntityValue(event.reference())`
+- `handle(BackorderedItemArrived)`: `Fluxzero.loadAggregate(event.orderId()).get()`
+
+`CustomerNotifier` uses framework aggregate injection:
+- `handle(PlaceOrder event, Order order)` — framework injects matching aggregate
+- `handle(AbortOrder event, Order order)` — framework injects matching aggregate
+- `handle(ShipmentSent event, Shipment shipment)` — framework injects matching aggregate
+
+`OrderProgressProjection` uses timestamp injection only:
+- `on(PlaceOrder event, Instant timestamp)` — no aggregate needed
 
 ### `@HandleQuery` — reads state
 
 Read-only. `SearchItems` and `GetUsers` define their handler inline on the record itself.
 
-### Consumers
+### Proxy consumers
 
-Named `proxyConsumer` values (`proxy-payments`, `proxy-backorders`, `proxy-shipments`) are proxy routing channel names — not application handler identities.
+Named `proxyConsumer` values (`proxy-payments`, `proxy-backorders`, `proxy-shipments`) are proxy routing channel names for external HTTP calls — not application handler identities.
 
 ---
 
@@ -208,7 +242,7 @@ Key patterns:
 | `AbortOrder` | `@RequiresRole(ADMIN)` | Only ever sent by `OrderFulfillment` as system user (see B4) |
 | `RegisterItem` | — | Dispatched in bulk by `RegisterItems` at startup |
 | `RegisterItems` | — | Handled by `CatalogHandler`; iterates and dispatches `RegisterItem` |
-| `ValidatePayment` | — | Extends `SendWebRequest`; HTTP POST to PSP |
+| `ValidatePayment` | — | Extends `SendWebRequest`; HTTP POST to PSP; applies `PaymentAccepted`/`PaymentRejected` via `loadAggregate().apply()` |
 | `BackorderItems` | — | Extends `SendWebRequest`; HTTP POST to supplier |
 | `SendShipment` | — | Extends `SendWebRequest`; applies `ShipmentSent` before HTTP call (see B5, R3) |
 | `CreateUser` | `@RequiresRole(ADMIN)` | `@AssertLegal` rejects if user already exists |
@@ -233,8 +267,8 @@ Key patterns:
 |---|---|---|
 | `PlaceOrder` | creates `Order` | `OrdersEndpoint`, `MemberCheckout` |
 | `AbortOrder` | sets `Order.aborted = true` | `OrderFulfillment` |
-| `PaymentAccepted` | creates `Payment(accepted=true)` | `ValidatePayment.handle()` |
-| `PaymentRejected` | creates `Payment(accepted=false)` | `ValidatePayment.handle()` |
+| `PaymentAccepted` | creates `Payment(accepted=true)` | `ValidatePayment.handle()` via `loadAggregate().apply()` |
+| `PaymentRejected` | creates `Payment(accepted=false)` | `ValidatePayment.handle()` via `loadAggregate().apply()` |
 | `ShipmentSent` | creates `Shipment` | `SendShipment.handle()` (before HTTP call — see B5) |
 | `ShippingFailed` | none | `SendShipment.handle()` on `FunctionalException` |
 | `BackorderedItemArrived` | none | `SupplyEndpoint.registerArrival()` webhook |
@@ -243,24 +277,30 @@ Key patterns:
 
 `ShippingFailed`, `BackorderedItemArrived`, and `BackorderFailed` have no aggregate — they are pure domain events.
 
+**Important:** `PaymentAccepted`/`PaymentRejected` must be applied via `loadAggregate().apply()` to create the `Payment` aggregate. Using `publishEvent()` directly would skip aggregate creation and break the payment flow.
+
 ---
 
 ## Event handlers
 
 ### `OrderFulfillment` — orchestrates the order pipeline
 
+Consumer: `order-fulfillment`
+
 | Trigger | Action |
 |---|---|
 | `PlaceOrder` | `sendAndForgetCommand(ValidatePayment)` |
-| `PaymentAccepted` | aggregate injected → `sendAndForgetCommand(BackorderItems)` |
-| `PaymentRejected` | aggregate injected → `sendAndForgetCommand(AbortOrder)` |
-| `BackorderedItemArrived` | aggregate injected → `sendAndForgetCommand(SendShipment)` — no abort guard (see R1) |
+| `PaymentAccepted` | loads Order via `loadEntityValue` → `sendAndForgetCommand(BackorderItems)` |
+| `PaymentRejected` | loads Order via `loadEntityValue` → `sendAndForgetCommand(AbortOrder)` |
+| `BackorderedItemArrived` | loads Order via `loadAggregate` → `sendAndForgetCommand(SendShipment)` — no abort guard (see R1) |
 | `BackorderFailed` | `sendAndForgetCommand(AbortOrder)` |
 | `ShippingFailed` | `sendAndForgetCommand(AbortOrder)` |
 
 All commands are fire-and-forget. Multiple abort paths can race (see R2).
 
 ### `OrderProgressProjection` — builds the order timeline
+
+Consumer: `order-projection`
 
 Writes `OrderObservation` documents to `shop-order-observations` using `indexAndWait()` (synchronous — see P4). Key pattern: `orderId:kind:subject` for idempotent reprocessing.
 
@@ -275,9 +315,11 @@ Writes `OrderObservation` documents to `shop-order-observations` using `indexAnd
 | `ShippingFailed` | `SHIPPING_FAILED` |
 | `AbortOrder` | `ORDER_ABORTED` |
 
-Runs independently of `OrderFulfillment` — can lag behind. `projectionPending` flag in the shop UI surfaces this (see R4).
+Runs independently of `OrderFulfillment` in its own consumer. The `projectionPending` flag in the shop UI surfaces any lag (see R4).
 
 ### `CustomerNotifier` — sends emails on key events
+
+Consumer: `customer-notifications`
 
 Uses framework aggregate injection to avoid explicit `loadAggregate`.
 
@@ -344,15 +386,15 @@ Uses framework aggregate injection to avoid explicit `loadAggregate`.
 POST /shop-account/orders  (MemberCheckout)
   sendCommand(PlaceOrder)
     → PlaceOrder event → Order created
-      OrderFulfillment: sendAndForgetCommand(ValidatePayment)
+      OrderFulfillment [order-fulfillment]: sendAndForgetCommand(ValidatePayment)
         ValidatePayment: HTTP POST /psp/validate/{paymentId}
-          → PaymentAccepted / PaymentRejected event → Payment created
+          → loadAggregate(paymentId).apply(PaymentAccepted/PaymentRejected) → Payment created
             OrderFulfillment (PaymentAccepted):
-              [Order injected] → sendAndForgetCommand(BackorderItems)
+              loadEntityValue(reference) → sendAndForgetCommand(BackorderItems)
                 BackorderItems: HTTP POST /supplier/order
                   → BackorderedItemArrived (per item, via SupplyEndpoint webhook)
                     OrderFulfillment (BackorderedItemArrived):
-                      [Order injected] → sendAndForgetCommand(SendShipment)
+                      loadAggregate(orderId) → sendAndForgetCommand(SendShipment)
                         SendShipment: apply ShipmentSent → HTTP POST /shipper/send
                           → (success) done
                           → (failure) ShippingFailed event
@@ -360,11 +402,11 @@ POST /shop-account/orders  (MemberCheckout)
                   → (failure) BackorderFailed event
                     OrderFulfillment: sendAndForgetCommand(AbortOrder)
             OrderFulfillment (PaymentRejected):
-              [Order injected] → sendAndForgetCommand(AbortOrder)
+              loadEntityValue(reference) → sendAndForgetCommand(AbortOrder)
 
-Every step also triggers:
-  OrderProgressProjection  → indexAndWait() to shop-order-observations
-  CustomerNotifier         → sendAndForgetCommand(SendEmail)
+Each event also triggers (in parallel, separate consumers):
+  OrderProgressProjection [order-projection]     → indexAndWait() to shop-order-observations
+  CustomerNotifier        [customer-notifications] → sendAndForgetCommand(SendEmail)
 ```
 
 ---
@@ -385,10 +427,9 @@ Every step also triggers:
 
 | # | Impact | Location | Status | Issue |
 |---|---|---|---|---|
-| P1 | High | `OrderFulfillment.handle(PaymentAccepted)` | ✅ Fixed | ~~Explicit `loadEntityValue` to get `itemIds` and `addressee`.~~ Replaced with framework aggregate injection (`Order order` parameter). |
-| P2 | High | `OrderFulfillment.handle(PaymentRejected)`, `handle(BackorderedItemArrived)` | ✅ Fixed | ~~Explicit `loadAggregate` to get `addressee`.~~ Replaced with framework aggregate injection. |
+| P1 | High | Event handlers | ✅ Fixed | Handlers sharing a single consumer blocked each other. **Fixed via `@Consumer` split** — each handler now runs in its own consumer (`order-fulfillment`, `order-projection`, `customer-notifications`). |
 | P3 | High | `SearchItems` | open | Fetches all items, counts categories in Java, filters in-memory. `ItemDetails.category` is `@Facet` — replace with `facetStats()` and `matchFacet(...)`. Exercise 6 target. |
-| P4 | Medium | `OrderProgressProjection` | open | All observation writes use `indexAndWait()` — synchronous, adds latency to every event in the pipeline. Switch to async indexing if eventual consistency in the UI is acceptable. |
+| P4 | Medium | `OrderProgressProjection` | open | All observation writes use `indexAndWait()` — synchronous, adds latency. Consumer split prevents this from blocking fulfillment. Could switch to async indexing for further improvement. |
 | P5 | Medium | `ShopSessions.create()` | open | Scans the entire session directory on every login to clean up expired files — O(n) filesystem scan. Use a background task or size-bounded cache instead. |
 | P6 | Low | `MemberCheckout.buy()` | open | `profileFor(member)` hits the key-value store on every order. Could be cached in-memory (Caffeine is already on the classpath). |
 | P7 | Low | `OrderStatus.from()` | open | Each status request does `search(OrderObservation.class)` + `loadAggregate(paymentId)` — two blocking calls. Acceptable for single-order views; would not scale for bulk listing. |
@@ -400,7 +441,7 @@ Every step also triggers:
 | R1 | High | `OrderFulfillment.handle(BackorderedItemArrived)` | Multi-item orders: a second `BackorderedItemArrived` can trigger `SendShipment` after the order has already been aborted. No `order.aborted()` guard before sending `SendShipment`. |
 | R2 | Medium | `OrderFulfillment` | Multiple abort paths (`PaymentRejected`, `BackorderFailed`, `ShippingFailed`) can all send `AbortOrder` for the same order concurrently. `IF_MODIFIED` on `Order` mitigates but does not prevent double command execution. |
 | R3 | Medium | `SendShipment` | `SendShipment` is `@TrackSelf` directly AND implements `ShipmentUpdate` which is also `@TrackSelf` — tracked twice. Also has a `@HandleCommand` conflict: both `SendWebRequest.handle()` and `ShipmentUpdate.handle()` default are present. Ambiguous which fires. |
-| R4 | Low | `OrderProgressProjection` vs `OrderFulfillment` | Independent consumers — projection can lag behind fulfillment. The `projectionPending` flag in the shop UI surfaces this but does not eliminate the window. |
+| R4 | Low | `OrderProgressProjection` vs `OrderFulfillment` | Independent consumers — projection can lag behind fulfillment. **Mitigated by consumer split** — they no longer block each other. The `projectionPending` flag in the shop UI surfaces any remaining lag. |
 | R5 | Low | `CustomerNotifier.on(PlaceOrder)` | Sends "We're processing your order" email immediately on `PlaceOrder`, even when the order is about to be rejected. Customer receives both a "processing" and an "aborted" email in quick succession. |
 | R6 | Low | `BackorderFailed`, `ShippingFailed`, `BackorderedItemArrived` | None of these events are `@TrackSelf`. They do not appear in the Devboard audit log, making failures harder to trace without additional tooling. |
 | R7 | Medium | `SupplyEndpoint.registerArrival()` | `POST /supply/arrival/{orderId}/{itemId}` has no authentication. Any caller can trigger a `BackorderedItemArrived` event for any order, potentially advancing an order through the pipeline without a real supplier delivery. |
@@ -419,3 +460,20 @@ Every step also triggers:
 | `UserTest` | User creation and roles (note B3: duplicate helper method) |
 
 Tests use `TestFixture` with in-memory fixtures and mocked external services — no Docker required.
+
+---
+
+## Anti-patterns to avoid
+
+Based on issues encountered during development:
+
+1. **Don't use `publishEvent()` for events with `@Apply` methods** — Use `loadAggregate().apply()` instead. `publishEvent()` skips aggregate creation/mutation.
+
+2. **Don't assume framework aggregate injection works everywhere** — It requires:
+   - The event to have a typed ID field (e.g., `OrderId`), not a String
+   - The event to be linked to an aggregate via `@Apply` or similar mechanism
+   - `PaymentAccepted`/`PaymentRejected` have `reference` (String), so injection fails
+   - `BackorderedItemArrived` has `OrderId` but no `@Apply`, so injection also fails in test fixtures
+   - The explicit `loadEntityValue`/`loadAggregate` calls in `OrderFulfillment` are **required**, not sub-optimal
+
+3. **Don't remove validation checks without understanding their purpose** — The `MemberCheckout.buy()` item existence check (`loadAggregate(id).get() == null`) prevents orders for non-existent items.

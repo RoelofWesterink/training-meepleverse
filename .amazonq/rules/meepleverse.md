@@ -1,6 +1,8 @@
 # Meepleverse project rules
 
-Always read `/Users/roelofwesterink/meepleverse/FINDINGS.md` before answering any question about this codebase.
+Always read these files before answering any question about this codebase:
+- `/Users/roelofwesterink/meepleverse/FINDINGS.md` — bugs, issues, architecture
+- `/Users/roelofwesterink/meepleverse/.amazonq/fluxzero-sdk-summary.md` — SDK 1.x patterns
 
 FINDINGS.md contains:
 - The full stack and dependency versions
