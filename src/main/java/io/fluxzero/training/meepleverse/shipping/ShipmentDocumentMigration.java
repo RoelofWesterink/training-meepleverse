@@ -17,7 +17,7 @@ import org.springframework.stereotype.Component;
  * 
  * Remove this class after the migration completes.
  */
-@Consumer(name = "shipment-schema-migration", minIndex = 0)
+@Consumer(name = "shipment-schema-migration-4", minIndex = 0)
 @Component
 public class ShipmentDocumentMigration {
 
