@@ -29,7 +29,9 @@ public class SendShipment extends SendWebRequest {
     public Object handle(Sender sender) {
         Fluxzero.loadAggregate(shipmentId).assertAndApply(new ShipmentSent(shipmentId, details));
         try {
-            return super.handle(sender);
+            var result = super.handle(sender);
+            Fluxzero.publishEvent(new ShipmentConfirmed(shipmentId, details.orderId()));
+            return result;
         } catch (FunctionalException e) {
             Fluxzero.publishEvent(new ShippingFailed(shipmentId, details.orderId()));
             throw e;

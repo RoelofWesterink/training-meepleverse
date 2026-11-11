@@ -7,6 +7,7 @@ import io.fluxzero.training.meepleverse.orders.api.PlaceOrder;
 import io.fluxzero.training.meepleverse.payments.api.PaymentAccepted;
 import io.fluxzero.training.meepleverse.payments.api.PaymentRejected;
 import io.fluxzero.training.meepleverse.orders.api.model.OrderId;
+import io.fluxzero.training.meepleverse.shipping.api.ShipmentConfirmed;
 import io.fluxzero.training.meepleverse.shipping.api.ShipmentSent;
 import io.fluxzero.training.meepleverse.shipping.api.ShippingFailed;
 import io.fluxzero.training.meepleverse.supplier.BackorderFailed;
@@ -56,6 +57,13 @@ public class OrderProgressProjection {
         store(new OrderObservation(event.details().orderId(), SHIPMENT_RECORDED,
                                    event.details().itemIds(), event.shipmentId(), null,
                                    timestamp), event.shipmentId().toString());
+    }
+
+    @HandleEvent
+    void on(ShipmentConfirmed event, Instant timestamp) {
+        store(new OrderObservation(event.orderId(), SHIPMENT_CONFIRMED,
+                                   List.of(), event.shipmentId(), null,
+                                   timestamp), event.shipmentId().toString() + ":confirmed");
     }
 
     @HandleEvent

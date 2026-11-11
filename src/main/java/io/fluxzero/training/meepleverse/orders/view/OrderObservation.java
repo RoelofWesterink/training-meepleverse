@@ -13,6 +13,6 @@ public record OrderObservation(OrderId orderId, Kind kind, List<ItemId> itemIds,
                                ShipmentId shipmentId, String reason, Instant at) {
     public enum Kind {
         ORDER_RECEIVED, PAYMENT_ACCEPTED, PAYMENT_REJECTED, ITEM_ARRIVED,
-        BACKORDER_FAILED, SHIPMENT_RECORDED, SHIPPING_FAILED, ORDER_ABORTED
+        BACKORDER_FAILED, SHIPMENT_RECORDED, SHIPMENT_CONFIRMED, SHIPPING_FAILED, ORDER_ABORTED
     }
 }

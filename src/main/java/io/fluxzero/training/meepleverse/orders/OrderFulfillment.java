@@ -8,16 +8,9 @@ import io.fluxzero.training.meepleverse.orders.api.model.Order;
 import io.fluxzero.training.meepleverse.payments.api.PaymentAccepted;
 import io.fluxzero.training.meepleverse.payments.api.PaymentRejected;
 import io.fluxzero.training.meepleverse.payments.api.ValidatePayment;
-import io.fluxzero.training.meepleverse.shipping.api.SendShipment;
-import io.fluxzero.training.meepleverse.shipping.api.ShippingFailed;
-import io.fluxzero.training.meepleverse.shipping.api.model.ShipmentDetails;
-import io.fluxzero.training.meepleverse.shipping.api.model.ShipmentId;
 import io.fluxzero.training.meepleverse.supplier.BackorderFailed;
 import io.fluxzero.training.meepleverse.supplier.BackorderItems;
-import io.fluxzero.training.meepleverse.supplier.BackorderedItemArrived;
 import org.springframework.stereotype.Component;
-
-import java.util.List;
 
 @Component
 public class OrderFulfillment {
@@ -44,18 +37,4 @@ public class OrderFulfillment {
     void handle(BackorderFailed event) {
         Fluxzero.sendAndForgetCommand(new AbortOrder(event.orderId(), "Backorder failed"));
     }
-
-    @HandleEvent
-    void handle(BackorderedItemArrived event) {
-        var order = Fluxzero.loadAggregate(event.orderId()).get();
-        Fluxzero.sendAndForgetCommand(new SendShipment(Fluxzero.generateId(ShipmentId.class),
-                                                      new ShipmentDetails(List.of(event.itemId()), order.orderId(),
-                                                                       order.details().addressee())));
-    }
-
-    @HandleEvent
-    void handle(ShippingFailed event) {
-        Fluxzero.sendAndForgetCommand(new AbortOrder(event.orderId(), "Shipment failed"));
-    }
-
 }

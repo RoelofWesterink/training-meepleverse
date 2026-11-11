@@ -26,9 +26,12 @@ public record OrderStatus(OrderId orderId, List<ItemId> itemIds, String paymentS
                 .map(OrderObservation::reason).reduce((first, last) -> last).orElse(null);
         var failedShipments = observations.stream().filter(o -> o.kind() == SHIPPING_FAILED)
                 .map(OrderObservation::shipmentId).toList();
+        var confirmedShipments = observations.stream().filter(o -> o.kind() == SHIPMENT_CONFIRMED)
+                .map(OrderObservation::shipmentId).toList();
         var shipments = new ArrayList<>(observations.stream().filter(o -> o.kind() == SHIPMENT_RECORDED)
                 .map(o -> new ShipmentView(o.shipmentId(), o.itemIds(), o.at(),
-                                          failedShipments.contains(o.shipmentId()) ? "FAILED" : "RECORDED"))
+                                          failedShipments.contains(o.shipmentId()) ? "FAILED" :
+                                          confirmedShipments.contains(o.shipmentId()) ? "SENT" : "RECORDED"))
                 .toList());
         // A failed command can roll back ShipmentSent. Keep the failure visible even without shipment details.
         observations.stream().filter(o -> o.kind() == SHIPPING_FAILED)
