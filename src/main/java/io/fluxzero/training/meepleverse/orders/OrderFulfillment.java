@@ -44,11 +44,19 @@ public class OrderFulfillment {
     }
 
     @HandleEvent
-    void handle(BackorderedItemArrived event) {
-        var order = Fluxzero.loadAggregate(event.orderId()).get();
-        Fluxzero.sendAndForgetCommand(new SendShipment(Fluxzero.generateId(ShipmentId.class),
-                                                      new ShipmentDetails(event.itemId(), order.orderId(),
-                                                                       order.details().addressee())));
+    void handle(BackorderedItemArrived event, Order order) {
+        if (order.aborted()) {
+            return;
+        }
+        
+        if (order.allItemsArrived()) {
+            Fluxzero.sendAndForgetCommand(new SendShipment(
+                    Fluxzero.generateId(ShipmentId.class),
+                    new ShipmentDetails(
+                            order.details().itemIds(),
+                            order.orderId(),
+                            order.details().addressee())));
+        }
     }
 
     @HandleEvent

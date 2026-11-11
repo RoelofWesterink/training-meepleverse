@@ -81,8 +81,8 @@ class ShopOrderTest {
 
     @Test
     void repeatedArrivalAndFullHistoryReplayDoNotDuplicateProgress() {
-        var arrival = new BackorderedItemArrived(first, orderId);
-        var shipment = new ShipmentSent(new ShipmentId("shipment-a"), new ShipmentDetails(first, orderId, addressee));
+        var arrival = new BackorderedItemArrived(orderId, first);
+        var shipment = new ShipmentSent(new ShipmentId("shipment-a"), new ShipmentDetails(List.of(first), orderId, addressee));
         fixture().givenCommands(placed).givenEvents(arrival, shipment)
                 .whenExecuting(f -> {
                     Fluxzero.publishEvent(placed);
@@ -105,7 +105,7 @@ class ShopOrderTest {
     void shippingFailureAndAbortReasonRemainVisible() {
         var shipmentId = new ShipmentId("shipment-b");
         fixture().givenCommands(placed)
-                .givenEvents(new ShipmentSent(shipmentId, new ShipmentDetails(first, orderId, addressee)),
+                .givenEvents(new ShipmentSent(shipmentId, new ShipmentDetails(List.of(first), orderId, addressee)),
                              new ShippingFailed(shipmentId, orderId))
                 .givenCommands(new AbortOrder(orderId, "Shipment failed"))
                 .whenGet("/orders/shop-order").expectWebResult(response -> {
@@ -120,7 +120,7 @@ class ShopOrderTest {
 
     @Test
     void oneOrdersObservationsCannotLeakIntoAnother() {
-        fixture().givenCommands(placed).givenEvents(new BackorderedItemArrived(first, new OrderId("another-order")))
+        fixture().givenCommands(placed).givenEvents(new BackorderedItemArrived(new OrderId("another-order"), first))
                 .whenGet("/orders/shop-order").expectWebResult(response -> {
                     assertTrue(response.<OrderStatus>getPayloadAs(OrderStatus.class).observations()
                             .stream().allMatch(o -> o.orderId().equals(orderId)));
@@ -154,7 +154,7 @@ class ShopOrderTest {
     @Test
     void timelineUsesTheOriginalEventTimestamp() {
         var timestamp = Instant.parse("2025-10-23T09:15:00Z");
-        var arrival = new Message(new BackorderedItemArrived(first, orderId)).withTimestamp(timestamp);
+        var arrival = new Message(new BackorderedItemArrived(orderId, first)).withTimestamp(timestamp);
         fixture().givenCommands(placed).givenEvents(arrival)
                 .whenGet("/orders/shop-order").expectWebResult(response -> {
                     var status = response.<OrderStatus>getPayloadAs(OrderStatus.class);

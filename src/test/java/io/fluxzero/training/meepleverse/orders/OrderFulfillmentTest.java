@@ -5,14 +5,18 @@ import io.fluxzero.sdk.test.TestFixture;
 import io.fluxzero.sdk.tracking.handling.IllegalCommandException;
 import io.fluxzero.sdk.web.HandlePost;
 import io.fluxzero.training.meepleverse.catalog.CatalogHandler;
+import io.fluxzero.training.meepleverse.catalog.api.model.ItemId;
 import io.fluxzero.training.meepleverse.orders.api.AbortOrder;
+import io.fluxzero.training.meepleverse.orders.api.model.OrderId;
 import io.fluxzero.training.meepleverse.payments.api.PaymentAccepted;
 import io.fluxzero.training.meepleverse.payments.api.PaymentRejected;
 import io.fluxzero.training.meepleverse.payments.api.ValidatePayment;
 import io.fluxzero.training.meepleverse.shipping.api.SendShipment;
+import io.fluxzero.training.meepleverse.shipping.api.ShipmentSent;
 import io.fluxzero.training.meepleverse.shipping.api.ShippingFailed;
 import io.fluxzero.training.meepleverse.supplier.BackorderFailed;
 import io.fluxzero.training.meepleverse.supplier.BackorderItems;
+import io.fluxzero.training.meepleverse.supplier.BackorderedItemArrived;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -42,19 +46,27 @@ class OrderFulfillmentTest {
 
         @Test
         void shipAfterBackorderArrival() {
+            // Single item order - shipment should happen after the one item arrives
             fixture.givenCommands("/orders/place-order-single.json")
-                    .whenEvent("/supply/backordered-item-arrived-order1.json")
-                    .expectEvents("/shipping/order1-shipped.json");
+                    .whenCommand(new BackorderedItemArrived(new OrderId("order1"), new ItemId("gloomhaven")))
+                    .expectEvents(BackorderedItemArrived.class, ShipmentSent.class);
         }
 
         @Test
-        void shipTwoItems() {
+        void shipTwoItemsOnlyAfterBothArrive() {
+            // Two item order - shipment should only happen after BOTH items arrive
+            var orderId = new OrderId("order2");
+            var gloomhaven = new ItemId("gloomhaven");
+            var arkNova = new ItemId("ark-nova");
+            
             fixture.givenCommands("/orders/place-order-double.json")
-                    .whenEvent("/supply/backorder-arrived-order2-item-gloomhaven.json")
-                    .expectEvents("/shipping/order2-shipped-gloomhaven.json")
+                    // First item arrives - no shipment yet
+                    .whenCommand(new BackorderedItemArrived(orderId, gloomhaven))
+                    .expectEvents(BackorderedItemArrived.class)
                     .andThen()
-                    .whenEvent("/supply/backorder-arrived-order2-item-ark-nova.json")
-                    .expectEvents("/shipping/order2-shipped-ark-nova.json");
+                    // Second item arrives - now shipment with both items
+                    .whenCommand(new BackorderedItemArrived(orderId, arkNova))
+                    .expectEvents(BackorderedItemArrived.class, ShipmentSent.class);
         }
     }
 
@@ -88,8 +100,9 @@ class OrderFulfillmentTest {
                         throw new IllegalCommandException("I went bankrupt");
                     }
                 }).givenCommands("/orders/place-order-single.json")
-                .whenEvent("/supply/backordered-item-arrived-order1.json")
-                .expectEvents(ShippingFailed.class, AbortOrder.class);
+                .whenCommand(new BackorderedItemArrived(new OrderId("order1"), new ItemId("gloomhaven")))
+                .expectEvents(BackorderedItemArrived.class, ShipmentSent.class, ShippingFailed.class)
+                .expectCommands(AbortOrder.class);
     }
 
     static class ExternalsMock {

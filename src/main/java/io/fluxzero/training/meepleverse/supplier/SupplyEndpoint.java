@@ -14,7 +14,7 @@ public class SupplyEndpoint {
 
     @HandlePost("/arrival/{orderId}/{itemId}")
     void registerArrival(@PathParam OrderId orderId, @PathParam ItemId itemId) {
-        Fluxzero.publishEvent(new BackorderedItemArrived(itemId, orderId));
+        Fluxzero.sendAndForgetCommand(new BackorderedItemArrived(orderId, itemId));
     }
 
 }
