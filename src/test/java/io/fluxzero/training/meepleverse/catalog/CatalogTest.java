@@ -14,7 +14,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class CatalogTest {
 
-    final TestFixture fixture = TestFixture.create(CatalogEndpoint.class, CatalogHandler.class);
+    final TestFixture fixture = TestFixture.create(CatalogEndpoint.class, CatalogHandler.class, ReindexItems.class);
 
     @Test
     void registerAndSearchItems() {
