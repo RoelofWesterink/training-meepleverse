@@ -82,7 +82,7 @@ class ShopOrderTest {
     @Test
     void repeatedArrivalAndFullHistoryReplayDoNotDuplicateProgress() {
         var arrival = new BackorderedItemArrived(first, orderId);
-        var shipment = new ShipmentSent(new ShipmentId("shipment-a"), new ShipmentDetails(first, orderId, addressee));
+        var shipment = new ShipmentSent(new ShipmentId("shipment-a"), new ShipmentDetails(List.of(first), orderId, addressee));
         fixture().givenCommands(placed).givenEvents(arrival, shipment)
                 .whenExecuting(f -> {
                     Fluxzero.publishEvent(placed);
@@ -105,7 +105,7 @@ class ShopOrderTest {
     void shippingFailureAndAbortReasonRemainVisible() {
         var shipmentId = new ShipmentId("shipment-b");
         fixture().givenCommands(placed)
-                .givenEvents(new ShipmentSent(shipmentId, new ShipmentDetails(first, orderId, addressee)),
+                .givenEvents(new ShipmentSent(shipmentId, new ShipmentDetails(List.of(first), orderId, addressee)),
                              new ShippingFailed(shipmentId, orderId))
                 .givenCommands(new AbortOrder(orderId, "Shipment failed"))
                 .whenGet("/orders/shop-order").expectWebResult(response -> {

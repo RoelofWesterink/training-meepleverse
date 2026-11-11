@@ -17,6 +17,8 @@ import io.fluxzero.training.meepleverse.supplier.BackorderItems;
 import io.fluxzero.training.meepleverse.supplier.BackorderedItemArrived;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
+
 @Component
 public class OrderFulfillment {
 
@@ -47,7 +49,7 @@ public class OrderFulfillment {
     void handle(BackorderedItemArrived event) {
         var order = Fluxzero.loadAggregate(event.orderId()).get();
         Fluxzero.sendAndForgetCommand(new SendShipment(Fluxzero.generateId(ShipmentId.class),
-                                                      new ShipmentDetails(event.itemId(), order.orderId(),
+                                                      new ShipmentDetails(List.of(event.itemId()), order.orderId(),
                                                                        order.details().addressee())));
     }
 
