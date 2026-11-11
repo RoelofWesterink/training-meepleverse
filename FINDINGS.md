@@ -23,15 +23,41 @@ Jump to: [Exercises](#exercises) · [Stack](#stack) · [Architecture](#architect
 
 | Consumer | Command | Rationale |
 |---|---|---|
-| `payments` | `ValidatePayment` | PSP HTTP calls; enables replay of failed payments via `minIndex` |
+| `payments` | `ValidatePayment` | PSP HTTP calls; enables `@HandleError` retry of failed payments |
 | `backorders` | `BackorderItems` | Supplier HTTP calls; enables replay of failed backorders |
 | `shipments` | `SendShipment` | Shipper HTTP calls; enables replay of failed shipments |
 
 **Why this is better:**
 - The blocking HTTP calls are the actual bottlenecks, not the event handlers
-- Named consumers on commands enable **replay via `minIndex`** to recover failed external calls
+- Named consumers on commands enable **selective retry** of failed external calls
 - Event handlers share the default consumer — they're fast and don't need isolation
-- Supports the "payment mayhem" recovery scenario: change `payments` consumer's `minIndex` to reprocess past `ValidatePayment` commands
+
+### Payment retry via `@HandleError` (Exercise 1 recovery)
+
+**Wrong approach (don't do this):** Using `minIndex` to replay all commands from a timestamp.
+```java
+// BAD: replays ALL ValidatePayment commands, including successful ones
+@Consumer(name = "payments-retry", minIndex = 114819858432000000L)
+```
+
+**Correct approach:** Use `@HandleError` with `@Trigger` to retry only failed commands.
+```java
+@HandleError
+static void retry(ConsoleError error, @Trigger(messageType = MessageType.COMMAND) ValidatePayment failed) {
+    Fluxzero.sendCommand(failed);
+}
+```
+
+**Why `@HandleError` is correct:**
+- Only processes commands that ended up in the error log
+- `@Trigger` gives you the exact failed command with its original payload
+- Surgical retry — no duplicate calls to already-successful payments
+- Can add dedupe, transform, or suppress logic before re-sending
+
+**When to use `minIndex`:**
+- Replaying a *new* consumer that never processed certain events
+- Backfilling a projection from a specific point in time
+- NOT for retrying failed commands — use `@HandleError` instead
 
 ---
 

@@ -1,11 +1,15 @@
 package io.fluxzero.training.meepleverse.payments.api;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import io.fluxzero.common.MessageType;
 import io.fluxzero.common.serialization.JsonUtils;
 import io.fluxzero.sdk.Fluxzero;
+import io.fluxzero.sdk.common.logging.ConsoleError;
 import io.fluxzero.sdk.tracking.Consumer;
 import io.fluxzero.sdk.tracking.TrackSelf;
+import io.fluxzero.sdk.tracking.handling.HandleError;
 import io.fluxzero.sdk.tracking.handling.Request;
+import io.fluxzero.sdk.tracking.handling.Trigger;
 import io.fluxzero.sdk.web.HttpRequestMethod;
 import io.fluxzero.sdk.web.WebRequest;
 import io.fluxzero.sdk.web.WebResponse;
@@ -20,8 +24,13 @@ import static io.fluxzero.sdk.configuration.ApplicationProperties.requirePropert
 
 @Value
 @TrackSelf
-@Consumer(name = "payments-retry", minIndex = 114819858432000000L)
+@Consumer(name = "payments")
 public class ValidatePayment extends SendWebRequest implements Request<Boolean> {
+
+    @HandleError
+    static void retry(ConsoleError error, @Trigger(messageType = MessageType.COMMAND) ValidatePayment failed) {
+        Fluxzero.sendCommand(failed);
+    }
     String proxyConsumer = "proxy-payments";
 
     @NotNull
