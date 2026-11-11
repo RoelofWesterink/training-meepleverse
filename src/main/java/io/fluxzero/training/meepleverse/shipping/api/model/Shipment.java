@@ -6,6 +6,6 @@ import io.fluxzero.sdk.modeling.Aggregate;
 import static io.fluxzero.sdk.modeling.EventPublication.IF_MODIFIED;
 
 @Aggregate(searchable = true, eventPublication = IF_MODIFIED)
-@Revision(1)
-public record Shipment(ShipmentId shipmentId, ShipmentDetails details) {
+@Revision(2)
+public record Shipment(ShipmentId shipmentId, ShipmentDetails details, boolean migrated) {
 }

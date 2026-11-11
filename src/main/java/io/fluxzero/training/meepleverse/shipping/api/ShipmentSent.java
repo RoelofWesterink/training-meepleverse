@@ -13,6 +13,6 @@ public record ShipmentSent(ShipmentId shipmentId, @Valid @NotNull ShipmentDetail
 
     @Apply
     Shipment apply() {
-        return new Shipment(shipmentId, details);
+        return new Shipment(shipmentId, details, false);
     }
 }

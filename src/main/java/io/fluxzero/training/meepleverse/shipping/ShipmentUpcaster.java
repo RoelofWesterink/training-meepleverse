@@ -1,29 +1,34 @@
 package io.fluxzero.training.meepleverse.shipping;
 
-import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.fluxzero.sdk.common.serialization.casting.Upcast;
+import org.springframework.stereotype.Component;
 
-import java.util.List;
-
+@Component
 public class ShipmentUpcaster {
 
-    @Upcast(type = "ShipmentSent", revision = 0)
-    ObjectNode upcastShipmentSent(ObjectNode node) {
-        return upcastDetails(node);
+    @Upcast(type = "io.fluxzero.training.meepleverse.shipping.api.ShipmentSent", revision = 0)
+    JsonNode upcastShipmentSentV0(ObjectNode payload) {
+        return upcastDetails(payload);
     }
 
-    @Upcast(type = "Shipment", revision = 0)
-    ObjectNode upcastShipment(ObjectNode node) {
-        return upcastDetails(node);
+    @Upcast(type = "io.fluxzero.training.meepleverse.shipping.api.model.Shipment", revision = 0)
+    JsonNode upcastShipmentV0(ObjectNode payload) {
+        return upcastDetails(payload);
     }
 
-    private ObjectNode upcastDetails(ObjectNode node) {
-        ObjectNode details = (ObjectNode) node.get("details");
-        if (details != null && details.has("itemId")) {
-            ArrayNode itemIds = details.putArray("itemIds");
-            itemIds.add(details.remove("itemId"));
+    @Upcast(type = "io.fluxzero.training.meepleverse.shipping.api.model.Shipment", revision = 1)
+    JsonNode upcastShipmentV1(ObjectNode payload) {
+        payload.put("migrated", true);
+        return payload;
+    }
+
+    private JsonNode upcastDetails(ObjectNode payload) {
+        ObjectNode details = payload.withObject("details");
+        if (details.has("itemId")) {
+            details.putArray("itemIds").add(details.remove("itemId"));
         }
-        return node;
+        return payload;
     }
 }
